@@ -8,6 +8,7 @@ RUN npm ci --only=production --legacy-peer-deps
 
 COPY . .
 
+RUN npm install -g @nestjs/cli
 RUN npm run build
 
 FROM node:18-alpine
