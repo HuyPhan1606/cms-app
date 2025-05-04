@@ -14,12 +14,14 @@ export const setupAxiosInterceptors = (
         if (!token) {
             try {
                 token = await authContext?.refreshAccessToken();
+                console.log(token);
             } catch (error) {
                 console.error("Failed to refresh token on request:", error);
                 throw error;
             }
         }
         if (token) {
+            console.log("go here gain");
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -29,11 +31,10 @@ export const setupAxiosInterceptors = (
         (response) => response,
         async (error) => {
             const originalRequest = error.config;
-            // Skip refresh for logout requests
             if (
                 error.response?.status === 401 &&
                 !originalRequest._retry &&
-                !originalRequest.url?.includes("/auth/logout") // Add this condition
+                !originalRequest.url?.includes("/auth/logout")
             ) {
                 originalRequest._retry = true;
                 try {

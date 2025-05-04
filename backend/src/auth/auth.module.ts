@@ -18,9 +18,9 @@ import { RolesGuard } from './roles.guard';
       isGlobal: true,
       useFactory: () => ({
         store: redisStore,
-        // host: process.env.REDIS_HOST,
-        // port: process.env.REDIS_PORT,
-        url: process.env.REDIS_URL, // Đảm bảo đọc từ biến môi trường
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+        // url: process.env.REDIS_URL,
         ttl: 0,
       }),
     }),

@@ -1,3 +1,5 @@
+// AuthContext.tsx
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -53,19 +55,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         role: decoded.role,
                     });
 
-                    console.log(decoded);
-
                     const isValid = await validateToken(storedToken);
                     if (!isValid) {
                         storedToken = await refreshaccess_token();
                     }
                 } catch (error) {
                     console.error("Error validating token:", error);
+                    storedToken = null;
+                }
+            }
+
+            // If no valid token, attempt to refresh
+            if (!storedToken) {
+                try {
+                    const newToken = await refreshaccess_token();
+                    setaccess_token(newToken);
+                } catch (error) {
+                    console.error("Failed to refresh token on init:", error);
                     setaccess_token(null);
                     setUser(null);
                     localStorage.removeItem("access_token");
                 }
             }
+
             setIsLoading(false);
         };
 
@@ -118,12 +130,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             throw new Error(
                 "Max refresh attempts reached. Please log in again."
             );
-        }
-
-        const refreshToken = Cookies.get("refreshToken");
-        if (!refreshToken) {
-            await logout();
-            throw new Error("No refresh token available. Please log in again.");
         }
 
         try {

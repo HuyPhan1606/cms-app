@@ -222,9 +222,6 @@ const CreateContentModal = ({
                                                     );
                                                 }
 
-                                                console.log(uploadUrl);
-                                                console.log(fileUrl);
-
                                                 await axios.put(
                                                     uploadUrl,
                                                     file,
@@ -235,7 +232,6 @@ const CreateContentModal = ({
                                                         },
                                                     }
                                                 );
-                                                console.log("not qua day");
 
                                                 setIsUploading(false);
 
@@ -343,10 +339,6 @@ const CreateContentModal = ({
                                                         }
                                                     );
 
-                                                    console.log(
-                                                        "File URL:",
-                                                        fileUrl
-                                                    );
                                                     setIsUploading(false);
                                                     resolve(fileUrl);
                                                 } catch (error: any) {

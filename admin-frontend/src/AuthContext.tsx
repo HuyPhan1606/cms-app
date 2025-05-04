@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     setUser(null);
                     localStorage.removeItem("access_token");
                 }
-            } // Do not call refreshAccessToken() if no storedToken exists
+            }
             setIsLoading(false);
         };
 
@@ -84,6 +84,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAccessToken(access_token);
         setRefreshAttempts(0);
         localStorage.setItem("access_token", access_token);
+
+        console.log(Cookies.get("refresh_token"));
 
         const decoded: JwtPayload = jwtDecode(access_token);
         const newUser = {
@@ -117,46 +119,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const refreshAccessToken = async (): Promise<string> => {
         if (refreshAttempts >= 3) {
-            logout();
+            await logout();
             throw new Error(
                 "Max refresh attempts reached. Please log in again."
             );
         }
 
-        const refreshToken = Cookies.get("refresh_token");
-        if (refreshToken) {
-            try {
-                const response = await axios.post(
-                    "http://localhost:5000/auth/refresh",
-                    {},
-                    { withCredentials: true }
-                );
-                const { access_token } = response.data;
-                setAccessToken(access_token);
-                setRefreshAttempts(0);
-                localStorage.setItem("access_token", access_token);
-                const decoded: JwtPayload = jwtDecode(access_token);
-                setUser({
-                    id: decoded.sub,
-                    email: decoded.email,
-                    role: decoded.role,
-                });
-                return access_token;
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.error("Failed to refresh token:", error);
-                    setRefreshAttempts((prev) => prev + 1);
-                    logout();
-                    throw new Error(
-                        error.response?.data?.message ||
-                            "Failed to refresh token"
-                    );
-                }
-                console.error("Unexpected error:", error);
+        console.log("vo day");
+
+        try {
+            const response = await axios.post(
+                "http://localhost:5000/auth/refresh",
+                {},
+                { withCredentials: true }
+            );
+            const { access_token } = response.data;
+            setAccessToken(access_token);
+            setRefreshAttempts(0);
+            localStorage.setItem("access_token", access_token);
+            const decoded: JwtPayload = jwtDecode(access_token);
+            setUser({
+                id: decoded.sub,
+                email: decoded.email,
+                role: decoded.role,
+            });
+            return access_token;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error("Failed to refresh token:", error);
+                setRefreshAttempts((prev) => prev + 1);
                 logout();
-                throw new Error("An unexpected error occurred");
+                throw new Error(
+                    error.response?.data?.message || "Failed to refresh token"
+                );
             }
+            console.error("Unexpected error:", error);
+            logout();
+            throw new Error("An unexpected error occurred");
         }
+
         return "";
     };
 

@@ -1,9 +1,10 @@
+// ContentList.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 import { Content } from "../types/content.types";
 import { AuthContext } from "../context/AuthContext";
+import api from "../context/axiosConfig";
 import socket from "../services/socket";
 
 const ContentList = () => {
@@ -15,14 +16,7 @@ const ContentList = () => {
         // Get initial data
         const fetchContents = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/contents",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${auth?.access_token}`,
-                        },
-                    }
-                );
+                const response = await api.get("/contents");
                 setContents(response.data);
             } catch (error) {
                 console.error("Error fetching contents:", error);
@@ -30,8 +24,12 @@ const ContentList = () => {
                 setLoading(false);
             }
         };
-        fetchContents();
-    }, []);
+
+        // Only fetch contents if auth is not loading
+        if (!auth?.isLoading) {
+            fetchContents();
+        }
+    }, [auth?.isLoading]);
 
     // Get updated data with WebSockets
     useEffect(() => {
@@ -67,7 +65,7 @@ const ContentList = () => {
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">
                 Content List
             </h2>
-            {loading ? (
+            {auth?.isLoading || loading ? (
                 <p className="text-gray-600">Loading...</p>
             ) : contents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

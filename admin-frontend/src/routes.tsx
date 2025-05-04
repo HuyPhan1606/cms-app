@@ -1,5 +1,4 @@
 import { JSX, useContext, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 
 interface ProtectedRouteProps {
@@ -7,7 +6,7 @@ interface ProtectedRouteProps {
     roles: string[];
 }
 
-export const ProtectedRoute = ({ children, roles }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const auth = useContext(AuthContext);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -36,14 +35,6 @@ export const ProtectedRoute = ({ children, roles }: ProtectedRouteProps) => {
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
             </div>
         );
-    }
-
-    if (!auth?.user) {
-        return <Navigate to="/login" />;
-    }
-
-    if (!roles.includes(auth.user.role)) {
-        return <Navigate to="/login" />;
     }
 
     return children;
