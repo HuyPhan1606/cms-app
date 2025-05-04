@@ -1,40 +1,28 @@
 services:
-    # Backend
     backend:
-        build:
-            context: ./backend
-            dockerfile: Dockerfile
+        image: huydev2k4/cms-backend:latest
         ports:
             - "5000:5000"
         env_file:
             - ./backend/.env
-        environment:
-            - NODE_ENV=production
-            - DATABASE_URL=mongodb://mongo:27017/cms_db
-            - REDIS_URL=redis://redis:6379
         depends_on:
             - redis
         restart: unless-stopped
 
-    # Admin Frontend
     admin-frontend:
-        build:
-            context: ./admin-frontend
-            dockerfile: Dockerfile
+        image: huydev2k4/cms-admin-frontend:latest
         ports:
             - "8080:80"
         env_file:
             - ./admin-frontend/.env
+        restart: unless-stopped
 
-    # Client Frontend
     client-frontend:
-        build:
-            context: ./client-frontend
-            dockerfile: Dockerfile
+        image: huydev2k4/cms-client-frontend:latest
         ports:
             - "8081:80"
+        restart: unless-stopped
 
-    # Redis
     redis:
         image: redis:latest
         ports:
@@ -44,5 +32,4 @@ services:
         restart: unless-stopped
 
 volumes:
-    mongo-data:
     redis-data:
