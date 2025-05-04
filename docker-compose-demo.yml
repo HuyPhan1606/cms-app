@@ -31,5 +31,4 @@ services:
         restart: unless-stopped
 
 volumes:
-    mongo-data:
     redis-data:
