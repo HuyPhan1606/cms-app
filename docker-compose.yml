@@ -7,13 +7,12 @@ services:
         ports:
             - "5000:5000"
         env_file:
-            - ./backend/.env # Đọc file .env từ thư mục backend
+            - ./backend/.env
         environment:
             - NODE_ENV=production
             - DATABASE_URL=mongodb://mongo:27017/cms_db
             - REDIS_URL=redis://redis:6379
         depends_on:
-            - mongo
             - redis
         restart: unless-stopped
 
@@ -25,7 +24,7 @@ services:
         ports:
             - "8080:80"
         env_file:
-            - ./admin-frontend/.env # Đọc file .env từ thư mục admin-frontend
+            - ./admin-frontend/.env
 
     # Client Frontend
     client-frontend:
@@ -34,17 +33,6 @@ services:
             dockerfile: Dockerfile
         ports:
             - "8081:80"
-
-    # Database (MongoDB)
-    mongo:
-        image: mongo:latest
-        ports:
-            - "27017:27017"
-        volumes:
-            - mongo-data:/data/db
-        environment:
-            - MONGO_INITDB_DATABASE=cms_db
-        restart: unless-stopped
 
     # Redis
     redis:
