@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm ci --only=production --legacy-peer-deps
 
 COPY . .
 
-RUN npm install --legacy-peer-deps
+RUN npm install
 RUN npm run build
 
 FROM node:18-alpine
