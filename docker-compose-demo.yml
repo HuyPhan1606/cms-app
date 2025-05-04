@@ -1,0 +1,47 @@
+services:
+    backend:
+        image: huydev2k4/cms-backend:latest
+        ports:
+            - "5000:5000"
+        env_file:
+            - ./backend.env
+        depends_on:
+            - mongo
+            - redis
+        restart: unless-stopped
+
+    admin-frontend:
+        image: huydev2k4/cms-admin-frontend:latest
+        ports:
+            - "8080:80"
+        env_file:
+            - ./admin-frontend.env
+
+    client-frontend:
+        image: huydev2k4/cms-client-frontend:latest
+        ports:
+            - "8081:80"
+        env_file:
+            - ./client-frontend.env
+
+    mongo:
+        image: mongo:latest
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongo-data:/data/db
+        environment:
+            - MONGO_INITDB_DATABASE=cms_db
+        restart: unless-stopped
+
+    redis:
+        image: redis:latest
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+        restart: unless-stopped
+
+volumes:
+    mongo-data:
+    redis-data:
