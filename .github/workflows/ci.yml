@@ -1,0 +1,61 @@
+name: Test, Build, and Push to Docker Hub
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    test-and-build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+
+            - name: Run tests for backend
+              run: |
+                  cd backend
+                  npm install
+                  npm run test
+              continue-on-error: true
+
+            - name: Run tests for admin-frontend
+              run: |
+                  cd admin-frontend
+                  npm install
+                  npm run test
+              continue-on-error: true
+
+            - name: Run tests for client-frontend
+              run: |
+                  cd client-frontend
+                  npm install
+                  npm run test
+              continue-on-error: true
+
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Build and push backend image
+              run: |
+                  docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cms-backend:latest ./backend
+                  docker push ${{ secrets.DOCKERHUB_USERNAME }}/cms-backend:latest
+
+            - name: Build and push admin-frontend image
+              run: |
+                  docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cms-admin-frontend:latest ./admin-frontend
+                  docker push ${{ secrets.DOCKERHUB_USERNAME }}/cms-admin-frontend:latest
+
+            - name: Build and push client-frontend image
+              run: |
+                  docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cms-client-frontend:latest ./client-frontend
+                  docker push ${{ secrets.DOCKERHUB_USERNAME }}/cms-client-frontend:latest
