@@ -36,6 +36,10 @@ export class UsersService {
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const userInDb = await this.userModel.findById(id);
+    if (!userInDb) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
     const _id = new Types.ObjectId(id);
     const updateData = {
       ...updateUserDto,
@@ -43,19 +47,22 @@ export class UsersService {
       updatedBy: _id,
     };
 
-    if (updateUserDto.password) {
+    if (
+      updateUserDto.password &&
+      !(updateUserDto.password === userInDb.password)
+    ) {
       updateData.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    const user = await this.userModel
-      .findByIdAndUpdate(_id, { $set: updateData }, { new: true })
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { $set: updateData }, { new: true })
       .exec();
 
-    if (!user) {
+    if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    return user;
+    return updatedUser;
   }
 
   async deleteUser(id: string) {
