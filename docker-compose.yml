@@ -2,7 +2,7 @@ services:
     backend:
         image: huydev2k4/cms-backend:latest
         ports:
-            - "5000:5000"
+            - "8080:5000"
         env_file:
             - ./backend/.env
         depends_on:
@@ -12,7 +12,7 @@ services:
     admin-frontend:
         image: huydev2k4/cms-admin-frontend:latest
         ports:
-            - "8080:80"
+            - "8081:8080"
         env_file:
             - ./admin-frontend/.env
         restart: unless-stopped
@@ -20,7 +20,7 @@ services:
     client-frontend:
         image: huydev2k4/cms-client-frontend:latest
         ports:
-            - "8081:80"
+            - "8082:8081"
         restart: unless-stopped
 
     redis:
