@@ -9,7 +9,10 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:8081', 'http://localhost:8082'],
+    origin: [
+      'http://huyphan23.workspace.opstech.or:8081',
+      'http://huyphan23.workspace.opstech.or:8082',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],

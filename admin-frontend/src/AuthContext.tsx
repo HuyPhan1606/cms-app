@@ -32,10 +32,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const validateToken = async (token: string) => {
         try {
-            const response = await axios.get("http://localhost:8080/contents", {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true,
-            });
+            const response = await axios.get(
+                import.meta.env.VITE_CONTENT_API as string,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                }
+            );
             return response.status === 200;
         } catch (error) {
             console.log(`Token error: ${error}`);
@@ -76,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (email: string, password: string) => {
         try {
             const response = await axios.post(
-                "http://localhost:8080/auth/login",
+                `${import.meta.env.VITE_AUTH_API as string}login`,
                 { email, password },
                 { withCredentials: true }
             );
@@ -104,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = async () => {
         try {
             await axios.post(
-                "http://localhost:8080/auth/logout",
+                `${import.meta.env.VITE_AUTH_API as string}logout`,
                 {},
                 {
                     headers: { Authorization: `Bearer ${accessToken}` },
@@ -131,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8080/auth/refresh",
+                `${import.meta.env.VITE_AUTH_API}refresh`,
                 {},
                 { withCredentials: true }
             );

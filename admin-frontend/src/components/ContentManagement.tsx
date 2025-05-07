@@ -70,7 +70,7 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
         try {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
-                    axios.get("http://localhost:8080/contents", {
+                    axios.get(import.meta.env.VITE_CONTENT_API as string, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -110,11 +110,14 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
 
             try {
                 await handleRequestWithTokenRefresh((token: string) =>
-                    axios.delete(`http://localhost:8080/contents/${id}`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    })
+                    axios.delete(
+                        `${import.meta.env.VITE_CONTENT_API as string}${id}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    )
                 );
                 setContents(contents.filter((content) => content._id !== id));
             } catch (error) {

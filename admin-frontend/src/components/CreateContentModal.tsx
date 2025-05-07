@@ -44,7 +44,7 @@ const CreateContentModal = ({
         if (isEdit && content) {
             try {
                 await axios.patch(
-                    `http://localhost:8080/contents/${content._id}`,
+                    `${import.meta.env.VITE_CONTENT_API}${content._id}`,
                     {
                         title,
                         blocks: [
@@ -69,7 +69,7 @@ const CreateContentModal = ({
         } else if (!previewContent) {
             try {
                 await axios.post(
-                    "http://localhost:8080/contents",
+                    `${import.meta.env.VITE_CONTENT_API}`,
                     {
                         title,
                         blocks: [
@@ -203,7 +203,10 @@ const CreateContentModal = ({
                                                         fileUrl,
                                                     },
                                                 } = await axios.post(
-                                                    "http://localhost:8080/s3/upload-url",
+                                                    `${
+                                                        import.meta.env
+                                                            .VITE_S3_API
+                                                    }`,
                                                     { fileName, fileType },
                                                     {
                                                         headers: {
@@ -289,7 +292,8 @@ const CreateContentModal = ({
                                                             fileUrl,
                                                         },
                                                     } = await axios.post(
-                                                        "http://localhost:8080/s3/upload-url",
+                                                        import.meta.env
+                                                            .VITE_S3_API as string,
                                                         { fileName, fileType },
                                                         {
                                                             headers: {

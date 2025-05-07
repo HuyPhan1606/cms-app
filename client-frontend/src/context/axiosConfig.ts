@@ -3,7 +3,7 @@ import axios from "axios";
 import { AuthContextType } from "./AuthContext";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: "http://huyphan23.workspace.opstech.or:8080",
     withCredentials: true,
 });
 

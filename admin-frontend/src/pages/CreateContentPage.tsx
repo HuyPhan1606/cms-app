@@ -26,7 +26,7 @@ const ContentManagement = () => {
         const fetchContents = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:8080/contents",
+                    import.meta.env.VITE_CONTENT_API as string,
                     {
                         headers: {
                             Authorization: `Bearer ${auth?.accessToken}`,
@@ -56,7 +56,7 @@ const ContentManagement = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm("Are you sure you want to delete this content?")) {
             try {
-                await axios.delete(`http://localhost:8080/contents/${id}`, {
+                await axios.delete(`${import.meta.env.VITE_CONTENT_API}${id}`, {
                     headers: {
                         Authorization: `Bearer ${auth?.accessToken}`,
                     },
@@ -81,7 +81,7 @@ const ContentManagement = () => {
         const fetchContents = async () => {
             try {
                 const response = await axios.get(
-                    "http://localhost:8080/contents",
+                    import.meta.env.VITE_CONTENT_API as string,
                     {
                         headers: {
                             Authorization: `Bearer ${auth?.accessToken}`,

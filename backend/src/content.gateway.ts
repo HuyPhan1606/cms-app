@@ -8,7 +8,10 @@ import { Server } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:8081', 'http://localhost:8082'],
+    origin: [
+      'http://huyphan23.workspace.opstech.or:8081',
+      'http://huyphan23.workspace.opstech.or:8082',
+    ],
   },
 })
 export class ContentGateway {

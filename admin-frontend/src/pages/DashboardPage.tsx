@@ -72,7 +72,7 @@ const DashboardPage = () => {
         try {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
-                    axios.get("http://localhost:8080/users", {
+                    axios.get(import.meta.env.VITE_USERS_API as string, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -123,7 +123,7 @@ const DashboardPage = () => {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
                     axios.post(
-                        "http://localhost:8080/users",
+                        import.meta.env.VITE_USERS_API as string,
                         {
                             ...newUser,
                             createdAt: new Date(),
@@ -158,7 +158,9 @@ const DashboardPage = () => {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
                     axios.patch(
-                        `http://localhost:8080/users/${updatedUser._id}`,
+                        `${import.meta.env.VITE_USERS_API as string}${
+                            updatedUser._id
+                        }`,
                         {
                             ...updatedUser,
                             updatedAt: new Date(),
@@ -196,7 +198,7 @@ const DashboardPage = () => {
 
             try {
                 await handleRequestWithTokenRefresh((token: string) =>
-                    axios.delete(`http://localhost:8080/users/${userId}`, {
+                    axios.delete(`${import.meta.env.VITE_USERS_API}${userId}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

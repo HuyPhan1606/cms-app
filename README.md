@@ -57,17 +57,17 @@ After successful startup, you can access the following URLs:
 
 ### Admin / Editor Page
 
--   URL: [http://localhost:8080/](http://localhost:8080/)
+-   URL: [http://huyphan23.workspace.opstech.or:8081/](http://huyphan23.workspace.opstech.or:8081/)
 
 ### Client Page
 
--   URL: [http://localhost:8081/](http://localhost:8081/)
+-   URL: [http://huyphan23.workspace.opstech.or:8082/](http://huyphan23.workspace.opstech.or:8082/)
 
 ---
 
 ### Link Demo
 
-- URL: [https://youtu.be/An5-AwAVIrE]
+-   URL: [https://youtu.be/An5-AwAVIrE]
 
 ---
 
