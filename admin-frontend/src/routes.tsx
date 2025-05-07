@@ -1,36 +1,62 @@
 import { JSX, useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { JwtPayload } from "./types/jwt.payload";
 
 interface ProtectedRouteProps {
     children: JSX.Element;
-    roles: string[];
+    roles?: string[];
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const isTokenExpired = (token: string): boolean => {
+    try {
+        const decoded: JwtPayload = jwtDecode(token);
+        const currentTime = Math.floor(Date.now() / 1000);
+        return decoded.exp < currentTime;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return true;
+    }
+};
+
+export const ProtectedRoute = ({ children, roles }: ProtectedRouteProps) => {
     const auth = useContext(AuthContext);
     const navigate = useNavigate();
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         const checkToken = async () => {
-            if (!auth?.accessToken && !auth?.isLoading) {
+            if (!auth) {
+                navigate("/login");
+                return;
+            }
+
+            if (auth.isLoading) {
+                return;
+            }
+
+            if (
+                !auth.accessToken ||
+                (auth.accessToken && isTokenExpired(auth.accessToken))
+            ) {
                 setIsRefreshing(true);
                 try {
-                    await auth?.refreshAccessToken();
+                    await auth.refreshAccessToken();
                 } catch (error) {
-                    navigate("/login");
                     console.error(
-                        "Failed to refresh token in ProtectedRoute: ",
+                        "Failed to refresh token in ProtectedRoute:",
                         error
                     );
+                    navigate("/login");
                 } finally {
                     setIsRefreshing(false);
                 }
             }
         };
+
         checkToken();
-    }, [auth?.accessToken, auth?.isLoading]);
+    }, [auth, auth?.accessToken, auth?.isLoading, auth?.user, navigate, roles]);
 
     if (auth?.isLoading || isRefreshing) {
         return (

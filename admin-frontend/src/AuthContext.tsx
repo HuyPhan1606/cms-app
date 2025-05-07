@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "./types/jwt.payload";
-import Cookies from "js-cookie";
 import { UserLogin } from "./types/user.types";
 
 export interface AuthContextType {
@@ -74,28 +74,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const login = async (email: string, password: string) => {
-        const response = await axios.post(
-            "http://localhost:5000/auth/login",
-            { email, password },
-            { withCredentials: true }
-        );
-        const { access_token } = response.data;
+        try {
+            const response = await axios.post(
+                "http://localhost:5000/auth/login",
+                { email, password },
+                { withCredentials: true }
+            );
+            const { access_token } = response.data;
 
-        setAccessToken(access_token);
-        setRefreshAttempts(0);
-        localStorage.setItem("access_token", access_token);
+            setAccessToken(access_token);
+            setRefreshAttempts(0);
+            localStorage.setItem("access_token", access_token);
 
-        console.log(Cookies.get("refresh_token"));
+            const decoded: JwtPayload = jwtDecode(access_token);
+            const newUser = {
+                id: decoded.sub,
+                email: decoded.email,
+                role: decoded.role,
+            };
+            setUser(newUser);
 
-        const decoded: JwtPayload = jwtDecode(access_token);
-        const newUser = {
-            id: decoded.sub,
-            email: decoded.email,
-            role: decoded.role,
-        };
-        setUser(newUser);
-
-        return newUser;
+            return newUser;
+        } catch (error) {
+            console.error("Login failed");
+            throw error;
+        }
     };
 
     const logout = async () => {
@@ -108,12 +111,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     withCredentials: true,
                 }
             );
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
             setAccessToken(null);
             setUser(null);
             setRefreshAttempts(0);
             localStorage.removeItem("access_token");
-        } catch (error) {
-            console.error("Logout failed:", error);
         }
     };
 
@@ -132,31 +136,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 { withCredentials: true }
             );
             const { access_token } = response.data;
-            setAccessToken(access_token);
+
+            setAccessToken(access_token as string);
             setRefreshAttempts(0);
             localStorage.setItem("access_token", access_token);
+
             const decoded: JwtPayload = jwtDecode(access_token);
             setUser({
                 id: decoded.sub,
                 email: decoded.email,
                 role: decoded.role,
             });
+
             return access_token;
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.error("Failed to refresh token:", error);
-                setRefreshAttempts((prev) => prev + 1);
-                logout();
-                throw new Error(
-                    error.response?.data?.message || "Failed to refresh token"
-                );
-            }
-            console.error("Unexpected error:", error);
-            logout();
-            throw new Error("An unexpected error occurred");
+            setRefreshAttempts((prev) => prev + 1);
+            console.error("Failed to refresh token:", error);
+            await logout();
+            throw new Error(
+                axios.isAxiosError(error)
+                    ? error.response?.data?.message || "Failed to refresh token"
+                    : "An unexpected error occurred"
+            );
         }
-
-        return "";
     };
 
     return (

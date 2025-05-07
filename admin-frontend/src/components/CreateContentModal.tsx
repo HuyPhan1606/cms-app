@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import axios from "axios";
 import { ContentTypes } from "../types/content.types";
-import socket from "../services/socket";
 
 interface CreateContentModalProps {
     onClose: () => void;
@@ -44,7 +43,7 @@ const CreateContentModal = ({
         e.preventDefault();
         if (isEdit && content) {
             try {
-                const response = await axios.patch(
+                await axios.patch(
                     `http://localhost:5000/contents/${content._id}`,
                     {
                         title,
@@ -63,14 +62,13 @@ const CreateContentModal = ({
                     }
                 );
 
-                socket.emit("contentUpdated", response.data);
                 onClose();
             } catch (err) {
                 console.error("Error updating content:", err);
             }
         } else if (!previewContent) {
             try {
-                const response = await axios.post(
+                await axios.post(
                     "http://localhost:5000/contents",
                     {
                         title,
@@ -89,8 +87,6 @@ const CreateContentModal = ({
                         },
                     }
                 );
-
-                socket.emit("contentCreated", response.data);
                 onClose();
             } catch (err) {
                 console.error("Error creating content:", err);

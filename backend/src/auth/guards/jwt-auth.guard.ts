@@ -1,6 +1,10 @@
-// src/auth/guards/jwt-auth.guard.ts
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {}
+export class JwtAuthGuard extends AuthGuard('custom-jwt') {
+  constructor() {
+    super();
+  }
+}

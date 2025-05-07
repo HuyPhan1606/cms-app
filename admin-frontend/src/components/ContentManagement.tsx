@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
-import { AuthContext } from "../AuthContext";
+import { AuthContext, AuthContextType } from "../AuthContext";
 import CreateContentModal from "./CreateContentModal";
 import { ContentTypes } from "../types/content.types";
+import axios from "axios";
 
 interface Content {
     _id: string;
@@ -16,35 +17,77 @@ interface Content {
 }
 
 export interface ContentManagementProps {
-    onCreate: () => void;
+    onCreate?: () => void;
 }
 
 const ContentManagement: React.FC<ContentManagementProps> = () => {
-    const auth = useContext(AuthContext);
+    const auth = useContext(AuthContext) as AuthContextType;
     const [contents, setContents] = useState<Content[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingContent, setEditingContent] = useState<Content | null>(null);
     const [previewContent, setPreviewContent] = useState<Content | null>(null);
 
-    useEffect(() => {
-        const fetchContents = async () => {
-            try {
-                const response = await axios.get(
-                    "http://localhost:5000/contents",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${auth?.accessToken}`,
-                        },
+    const handleRequestWithTokenRefresh = async (
+        requestFunc: (token: string) => Promise<any>
+    ) => {
+        try {
+            const response = await requestFunc(auth.accessToken || "");
+            return response;
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                try {
+                    const new_access_token = await auth.refreshAccessToken();
+                    if (!new_access_token) {
+                        console.error("No access token found after refresh");
+                        await auth.logout();
+                        return {
+                            message: "Token is invalid!",
+                        };
                     }
-                );
-                setContents(response.data);
-            } catch (error) {
-                console.error("Error fetching contents:", error);
-            } finally {
-                setLoading(false);
+                    return await requestFunc(new_access_token);
+                } catch (refreshError) {
+                    console.error("Failed to refresh token:", refreshError);
+                    await auth.logout();
+                    return {
+                        message: "Token is invalid!",
+                    };
+                }
+            } else {
+                console.error("Request error:", error);
+                throw error;
             }
-        };
+        }
+    };
+
+    const fetchContents = async () => {
+        if (!auth) {
+            console.error("Auth context is not available");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await handleRequestWithTokenRefresh(
+                (token: string) =>
+                    axios.get("http://localhost:5000/contents", {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+            );
+            if (response) {
+                setContents(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching contents:", error);
+            await auth.logout();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchContents();
     }, [auth]);
 
@@ -60,15 +103,23 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
 
     const handleDelete = async (id: string) => {
         if (window.confirm("Are you sure you want to delete this content?")) {
+            if (!auth) {
+                console.error("Auth context is not available");
+                return;
+            }
+
             try {
-                await axios.delete(`http://localhost:5000/contents/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${auth?.accessToken}`,
-                    },
-                });
+                await handleRequestWithTokenRefresh((token: string) =>
+                    axios.delete(`http://localhost:5000/contents/${id}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                );
                 setContents(contents.filter((content) => content._id !== id));
             } catch (error) {
                 console.error("Error deleting content:", error);
+                await auth.logout();
             }
         }
     };
@@ -82,22 +133,6 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
         setIsModalOpen(false);
         setEditingContent(null);
         setPreviewContent(null);
-        // Refresh content list
-        const fetchContents = async () => {
-            try {
-                const response = await axios.get(
-                    "http://localhost:5000/contents",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${auth?.accessToken}`,
-                        },
-                    }
-                );
-                setContents(response.data);
-            } catch (error) {
-                console.error("Error fetching contents:", error);
-            }
-        };
         fetchContents();
     };
 
@@ -180,7 +215,7 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
             {isModalOpen && (
                 <CreateContentModal
                     onClose={handleModalClose}
-                    accessToken={auth?.accessToken || ""}
+                    accessToken={localStorage.getItem("access_token") as string}
                     userId={auth?.user?.id || ""}
                     isEdit={!!editingContent}
                     content={editingContent as ContentTypes}

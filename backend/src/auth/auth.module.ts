@@ -24,10 +24,9 @@ import { RolesGuard } from './roles.guard';
         ttl: 0,
       }),
     }),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'custom-jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
     }),
     UsersModule,
   ],

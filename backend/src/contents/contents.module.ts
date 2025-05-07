@@ -5,10 +5,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Content, ContentSchema } from './content.schema';
 import { S3Service } from 'src/s3.service';
 import { ContentGateway } from 'src/content.gateway';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Content.name, schema: ContentSchema }]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+    }),
   ],
   controllers: [ContentsController],
   providers: [ContentsService, S3Service, ContentGateway],

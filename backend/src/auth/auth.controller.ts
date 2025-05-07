@@ -1,6 +1,6 @@
+/* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   Controller,
   Post,
@@ -11,8 +11,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,17 +23,21 @@ export class AuthController {
     @Body() body: { email: string; password: string },
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { access_token, refresh_token } = await this.authService.login(
-      body.email,
-      body.password,
-    );
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    return { access_token };
+    try {
+      const { access_token, refresh_token } = await this.authService.login(
+        body.email,
+        body.password,
+      );
+      res.cookie('refresh_token', refresh_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      return { access_token };
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('refresh')
@@ -46,9 +50,9 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   async logout(@Req() req, @Res({ passthrough: true }) res: Response) {
-    await this.authService.logout(req.user.sub);
+    await this.authService.logout(req.user.sub as string);
     res.clearCookie('refresh_token');
     return {};
   }

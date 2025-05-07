@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../AuthContext";
+import { AxiosError } from "axios";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -30,7 +31,10 @@ const LoginPage = () => {
             }, 1500);
         } catch (err) {
             setAlertType("error");
-            if (err instanceof Error) {
+            console.log(err);
+            if (err instanceof AxiosError) {
+                setAlertMessage(err.response?.data.message);
+            } else if (err instanceof Error) {
                 setAlertMessage(err.message);
             } else {
                 setAlertMessage("Login failed");

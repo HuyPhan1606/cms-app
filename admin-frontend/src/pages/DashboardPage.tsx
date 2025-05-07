@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useContext, useEffect, useState } from "react";
 import { AuthContext, AuthContextType } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 import { User } from "../types/user.types";
-import axios from "axios";
 import UserManagement from "../components/UserManagement";
 import ContentManagement from "../components/ContentManagement";
 import CreateContentModal from "../components/CreateContentModal";
+import axios from "axios";
 
 const DashboardPage = () => {
     const auth = useContext(AuthContext) as AuthContextType;
@@ -14,7 +16,7 @@ const DashboardPage = () => {
         "dashboard" | "content" | "users"
     >("dashboard");
     const [users, setUsers] = useState<User[]>([]);
-    const [, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [creatingUser, setCreatingUser] = useState(false);
     const [newUser, setNewUser] = useState<User>({
@@ -25,25 +27,71 @@ const DashboardPage = () => {
     } as User);
     const [showCreateContentModal, setShowCreateContentModal] = useState(false);
 
+    const handleRequestWithTokenRefresh = async (
+        requestFunc: (token: string) => Promise<any>
+    ) => {
+        try {
+            const response = await requestFunc(auth.accessToken || "");
+            return response;
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                try {
+                    const new_access_token = await auth.refreshAccessToken();
+                    if (!new_access_token) {
+                        console.error("No access token found after refresh");
+                        await auth.logout();
+                        navigate("/login");
+                        return {
+                            message: "Token is invalid!",
+                        };
+                    }
+                    return await requestFunc(new_access_token);
+                } catch (refreshError) {
+                    console.error("Failed to refresh token:", refreshError);
+                    await auth.logout();
+                    navigate("/login");
+                    return {
+                        message: "Token is invalid!",
+                    };
+                }
+            } else {
+                console.error("Request error:", error);
+                throw error;
+            }
+        }
+    };
+
+    const fetchUsers = async () => {
+        if (!auth) {
+            console.error("Auth context is not available");
+            setLoading(false);
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await handleRequestWithTokenRefresh(
+                (token: string) =>
+                    axios.get("http://localhost:5000/users", {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+            );
+            if (response) {
+                setUsers(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            await auth.logout();
+            navigate("/login");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (auth?.user?.role === "admin" && activeTab === "users") {
-            const fetchUsers = async () => {
-                try {
-                    const response = await axios.get(
-                        "http://localhost:5000/users",
-                        {
-                            headers: {
-                                Authorization: `Bearer ${auth.accessToken}`,
-                            },
-                        }
-                    );
-                    setUsers(response.data);
-                } catch (error) {
-                    console.error("Error fetching users:", error);
-                } finally {
-                    setLoading(false);
-                }
-            };
             fetchUsers();
         } else {
             setLoading(false);
@@ -65,64 +113,100 @@ const DashboardPage = () => {
     };
 
     const handleSaveNewUser = async () => {
+        if (!auth) {
+            console.error("Auth context is not available");
+            navigate("/login");
+            return;
+        }
+
         try {
-            const response = await axios.post(
-                "http://localhost:5000/users",
-                {
-                    ...newUser,
-                    createdAt: new Date(),
-                    createdBy: auth?.user?.email,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${auth.accessToken}`,
-                    },
-                }
+            const response = await handleRequestWithTokenRefresh(
+                (token: string) =>
+                    axios.post(
+                        "http://localhost:5000/users",
+                        {
+                            ...newUser,
+                            createdAt: new Date(),
+                            createdBy: auth?.user?.email,
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    )
             );
-            setUsers([...users, response.data]);
-            setCreatingUser(false);
+            if (response) {
+                setUsers([...users, response.data]);
+                setCreatingUser(false);
+            }
         } catch (error) {
             console.error("Error creating user:", error);
+            await auth.logout();
+            navigate("/login");
         }
     };
 
     const handleUpdateUser = async (updatedUser: User) => {
+        if (!auth) {
+            console.error("Auth context is not available");
+            navigate("/login");
+            return;
+        }
+
         try {
-            const response = await axios.patch(
-                `http://localhost:5000/users/${updatedUser._id}`,
-                {
-                    ...editingUser,
-                    updatedAt: new Date(),
-                    updatedBy: auth?.user?.email,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${auth.accessToken}`,
-                    },
-                }
+            const response = await handleRequestWithTokenRefresh(
+                (token: string) =>
+                    axios.patch(
+                        `http://localhost:5000/users/${updatedUser._id}`,
+                        {
+                            ...updatedUser,
+                            updatedAt: new Date(),
+                            updatedBy: auth?.user?.email,
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    )
             );
-            setUsers(
-                users.map((user) =>
-                    user._id === updatedUser._id ? response.data : user
-                )
-            );
-            setEditingUser(null);
+            if (response) {
+                setUsers(
+                    users.map((user) =>
+                        user._id === updatedUser._id ? response.data : user
+                    )
+                );
+                setEditingUser(null);
+            }
         } catch (error) {
             console.error("Error updating user:", error);
+            await auth.logout();
+            navigate("/login");
         }
     };
 
     const handleDelete = async (userId: string) => {
         if (window.confirm("Are you sure you want to delete this user?")) {
+            if (!auth) {
+                console.error("Auth context is not available");
+                navigate("/login");
+                return;
+            }
+
             try {
-                await axios.delete(`http://localhost:5000/users/${userId}`, {
-                    headers: {
-                        Authorization: `Bearer ${auth.accessToken}`,
-                    },
-                });
+                await handleRequestWithTokenRefresh((token: string) =>
+                    axios.delete(`http://localhost:5000/users/${userId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                );
                 setUsers(users.filter((user) => user._id !== userId));
             } catch (error) {
                 console.error("Error deleting user:", error);
+                await auth.logout();
+                navigate("/login");
             }
         }
     };
@@ -212,7 +296,7 @@ const DashboardPage = () => {
                             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                             onClick={() =>
                                 auth
-                                    ?.logout()
+                                    .logout()
                                     .then(() => navigate("/login"))
                                     .catch(() => navigate("/login"))
                             }
@@ -452,7 +536,7 @@ const DashboardPage = () => {
                                         Role
                                     </label>
                                     <select
-                                        id="role"
+                                        id="rolezie"
                                         value={editingUser.role}
                                         onChange={(e) =>
                                             setEditingUser({
