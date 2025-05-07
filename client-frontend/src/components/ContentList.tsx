@@ -1,122 +1,158 @@
-// ContentList.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { AuthContext, AuthContextType } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Content } from "../types/content.types";
-import { AuthContext } from "../context/AuthContext";
-import api from "../context/axiosConfig";
-import socket from "../services/socket";
 
-const ContentList = () => {
+const ContentList = ({ onCreate }: { onCreate: () => void }) => {
+    const auth = useContext(AuthContext) as AuthContextType;
+    const navigate = useNavigate();
     const [contents, setContents] = useState<Content[]>([]);
     const [loading, setLoading] = useState(true);
-    const auth = useContext(AuthContext);
+
+    const handleRequestWithTokenRefresh = async (
+        requestFunc: (token: string) => Promise<any>
+    ) => {
+        try {
+            const response = await requestFunc(auth.access_token || "");
+            return response;
+        } catch (error: any) {
+            if (error.response?.status === 401) {
+                try {
+                    const new_access_token = await auth.refreshAccessToken();
+                    if (!new_access_token) {
+                        console.error("No access token found after refresh");
+                        await auth.logout();
+                        navigate("/login");
+                        return {
+                            message: "Token is invalid!",
+                        };
+                    }
+                    return await requestFunc(new_access_token);
+                } catch (refreshError) {
+                    console.error("Failed to refresh token:", refreshError);
+                    await auth.logout();
+                    navigate("/login");
+                    return {
+                        message: "Token is invalid!",
+                    };
+                }
+            } else {
+                console.error("Request error:", error);
+                throw error;
+            }
+        }
+    };
+
+    const fetchContents = async () => {
+        if (!auth) {
+            console.error("Auth context is not available");
+            setLoading(false);
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await handleRequestWithTokenRefresh(
+                (token: string) =>
+                    axios.get(
+                        `http://huyphan23.workspace.opstech.org:8080/contents`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    )
+            );
+            if (response) {
+                setContents(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching contents:", error);
+            await auth.logout();
+            navigate("/login");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchContents = async (retryCount = 0) => {
-            const maxRetries = 1; // Số lần thử lại tối đa
-            try {
-                const response = await api.get("/contents");
-                setContents(response.data);
-            } catch (error) {
-                console.error("Error fetching contents:", error);
-
-                if (
-                    (error as any).response?.status === 401 &&
-                    retryCount < maxRetries
-                ) {
-                    console.log(
-                        `Retrying fetchContents, attempt ${retryCount + 1}`
-                    );
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-                    return fetchContents(retryCount + 1);
-                }
-
-                console.error("Failed to fetch contents after retries:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         if (!auth?.isLoading) {
             fetchContents();
         }
     }, [auth?.isLoading]);
 
-    // Get updated data with WebSockets
-    useEffect(() => {
-        socket.on("contentCreated", (createdContent: any) => {
-            setContents((prevContents) => {
-                return [...prevContents, createdContent];
-            });
-        });
-
-        return () => {
-            socket.off("contentCreated");
-        };
-    }, []);
-
-    useEffect(() => {
-        socket.on("contentUpdated", (updatedContent: any) => {
-            setContents((prevContents) => {
-                const index = prevContents.findIndex(
-                    (content) => content._id === updatedContent._id
-                );
-                const newContents = [...prevContents];
-                newContents[index] = updatedContent;
-                return newContents;
-            });
-        });
-        return () => {
-            socket.off("contentUpdated");
-        };
-    }, []);
-
-    // Get deleted data with WebSockets
-    useEffect(() => {
-        socket.on("contentDeleted", (deletedContent: any) => {
-            setContents((prevContents) => {
-                const result = prevContents.filter(
-                    (c) => c._id !== deletedContent._id
-                );
-                return [...result];
-            });
-        });
-
-        return () => {
-            socket.off("contentDeleted");
-        };
-    }, []);
-
     return (
-        <div className="max-w-7xl mx-auto py-6 px-4">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                Content List
-            </h2>
-            {auth?.isLoading || loading ? (
-                <p className="text-gray-600">Loading...</p>
-            ) : contents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {contents.map((content) => (
-                        <Link
-                            key={content._id}
-                            to={`/content/${content._id}`}
-                            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition"
-                        >
-                            <h3 className="text-lg font-medium text-gray-800">
-                                {content.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm mt-2">
-                                Created:{" "}
-                                {new Date(
-                                    content.createdAt
-                                ).toLocaleDateString()}
-                            </p>
-                        </Link>
-                    ))}
-                </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold text-gray-800">
+                    Content Management
+                </h2>
+                <button
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                    onClick={onCreate}
+                >
+                    Create New Content
+                </button>
+            </div>
+
+            {loading ? (
+                <p className="text-gray-600">Loading contents...</p>
+            ) : contents.length === 0 ? (
+                <p className="text-gray-600">No contents available.</p>
             ) : (
-                <p className="text-gray-600">No content found.</p>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead>
+                            <tr className="bg-gray-100 border-b">
+                                <th className="py-3 px-4 text-left text-gray-600">
+                                    Title
+                                </th>
+                                <th className="py-3 px-4 text-left text-gray-600">
+                                    Author
+                                </th>
+                                <th className="py-3 px-4 text-left text-gray-600">
+                                    Created At
+                                </th>
+                                <th className="py-3 px-4 text-left text-gray-600">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {contents.map((content) => (
+                                <tr key={content._id} className="border-b">
+                                    <td className="py-3 px-4">
+                                        {content.title}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {content.author}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {new Date(
+                                            content.createdAt
+                                        ).toLocaleDateString()}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        <button
+                                            className="text-indigo-600 hover:underline mr-3"
+                                            onClick={() => {}}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="text-red-600 hover:underline"
+                                            onClick={() => {}}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
