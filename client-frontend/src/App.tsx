@@ -1,7 +1,5 @@
-import { useContext, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider, AuthContext } from "./context/AuthContext";
-import { setupAxiosInterceptors } from "./context/axiosConfig";
+import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -9,17 +7,20 @@ import ContentList from "./components/ContentList";
 import ContentDetail from "./components/ContentDetail";
 
 export const App = () => {
-    const authContext = useContext(AuthContext);
-
-    useEffect(() => {
-        setupAxiosInterceptors(authContext);
-    }, [authContext]);
-
     return (
         <Router>
             <Navbar />
             <Routes>
-                <Route path="/" element={<ContentList />} />
+                <Route
+                    path="/"
+                    element={
+                        <ContentList
+                            onCreate={function (): void {
+                                throw new Error("Function not implemented.");
+                            }}
+                        />
+                    }
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/content/:id" element={<ContentDetail />} />
