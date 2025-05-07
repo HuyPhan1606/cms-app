@@ -20,6 +20,15 @@ const ContentList = () => {
                 setContents(response.data);
             } catch (error) {
                 console.error("Error fetching contents:", error);
+
+                if ((error as any).response?.status === 401) {
+                    try {
+                        const retryResponse = await api.get("/contents");
+                        setContents(retryResponse.data);
+                    } catch (retryError) {
+                        console.error("Retry failed:", retryError);
+                    }
+                }
             } finally {
                 setLoading(false);
             }
