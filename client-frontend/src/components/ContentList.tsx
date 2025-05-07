@@ -13,22 +13,26 @@ const ContentList = () => {
     const auth = useContext(AuthContext);
 
     useEffect(() => {
-        // Get initial data
-        const fetchContents = async () => {
+        const fetchContents = async (retryCount = 0) => {
+            const maxRetries = 1; // Số lần thử lại tối đa
             try {
                 const response = await api.get("/contents");
                 setContents(response.data);
             } catch (error) {
                 console.error("Error fetching contents:", error);
 
-                if ((error as any).response?.status === 401) {
-                    try {
-                        const retryResponse = await api.get("/contents");
-                        setContents(retryResponse.data);
-                    } catch (retryError) {
-                        console.error("Retry failed:", retryError);
-                    }
+                if (
+                    (error as any).response?.status === 401 &&
+                    retryCount < maxRetries
+                ) {
+                    console.log(
+                        `Retrying fetchContents, attempt ${retryCount + 1}`
+                    );
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                    return fetchContents(retryCount + 1);
                 }
+
+                console.error("Failed to fetch contents after retries:", error);
             } finally {
                 setLoading(false);
             }

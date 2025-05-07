@@ -54,6 +54,9 @@ export const setupAxiosInterceptors = (authContext: AuthContextType | null) => {
                         throw new Error("Authentication context missing");
                     }
                     const newToken = await authContext.refreshAccessToken();
+                    if (!newToken) {
+                        throw new Error("Failed to obtain new token");
+                    }
                     console.log("New token obtained:", newToken);
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     console.log("Retrying request:", originalRequest.url);
@@ -64,12 +67,16 @@ export const setupAxiosInterceptors = (authContext: AuthContextType | null) => {
                         axios.isAxiosError(refreshError) &&
                         refreshError.response?.status === 401
                     ) {
+                        console.log("Logging out due to failed refresh");
                         authContext?.logout();
                     }
                     return Promise.reject(refreshError);
                 }
             }
-            console.log("Rejecting error:", error.response?.status);
+            console.log(
+                "Rejecting error:",
+                error.response?.status || "unknown"
+            );
             return Promise.reject(error);
         }
     );
