@@ -4,6 +4,7 @@ import { AuthContext, AuthContextType } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Content } from "../types/content.types";
+import socket from "../services/socket";
 
 const ContentList = () => {
     const auth = useContext(AuthContext) as AuthContextType;
@@ -82,6 +83,51 @@ const ContentList = () => {
             fetchContents();
         }
     }, [auth?.isLoading]);
+
+    // Get updated data with WebSockets
+    useEffect(() => {
+        socket.on("contentCreated", (createdContent: any) => {
+            setContents((prevContents) => {
+                return [...prevContents, createdContent];
+            });
+        });
+
+        return () => {
+            socket.off("contentCreated");
+        };
+    }, []);
+
+    useEffect(() => {
+        socket.on("contentUpdated", (updatedContent: any) => {
+            setContents((prevContents) => {
+                const index = prevContents.findIndex(
+                    (content) => content._id === updatedContent._id
+                );
+                const newContents = [...prevContents];
+                newContents[index] = updatedContent;
+                return newContents;
+            });
+        });
+        return () => {
+            socket.off("contentUpdated");
+        };
+    }, []);
+
+    // Get deleted data with WebSockets
+    useEffect(() => {
+        socket.on("contentDeleted", (deletedContent: any) => {
+            setContents((prevContents) => {
+                const result = prevContents.filter(
+                    (c) => c._id !== deletedContent._id
+                );
+                return [...result];
+            });
+        });
+
+        return () => {
+            socket.off("contentDeleted");
+        };
+    }, []);
 
     return (
         <div className="max-w-7xl mx-auto py-6 px-4">

@@ -69,8 +69,8 @@ const ContentManagement = () => {
     };
 
     const handlePreview = (content: Content) => {
-        setPreviewContent(content); // Set the content to preview
-        setIsModalOpen(true); // Open the modal for preview
+        setPreviewContent(content);
+        setIsModalOpen(true);
     };
 
     const handleModalClose = () => {
