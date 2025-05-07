@@ -57,11 +57,11 @@ After successful startup, you can access the following URLs:
 
 ### Admin / Editor Page
 
--   URL: [http://huyphan23.workspace.opstech.or:8081/](http://huyphan23.workspace.opstech.or:8081/)
+-   URL: [http://huyphan23.workspace.opstech.org:8081/](http://huyphan23.workspace.opstech.org:8081/)
 
 ### Client Page
 
--   URL: [http://huyphan23.workspace.opstech.or:8082/](http://huyphan23.workspace.opstech.or:8082/)
+-   URL: [http://huyphan23.workspace.opstech.org:8082/](http://huyphan23.workspace.opstech.org:8082/)
 
 ---
 

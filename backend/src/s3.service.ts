@@ -9,7 +9,6 @@ export class S3Service {
   private s3Client: S3Client;
 
   constructor() {
-    // Ensure the environment variables exist
     const region = process.env.AWS_REGION as string;
     const accessKeyId = process.env.AWS_ACCESS_KEY as string;
     const secretAccessKey = process.env.AWS_SECRET_KEY as string;
