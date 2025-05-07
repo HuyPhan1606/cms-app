@@ -16,7 +16,7 @@ const DashboardPage = () => {
         "dashboard" | "content" | "users"
     >("dashboard");
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [creatingUser, setCreatingUser] = useState(false);
     const [newUser, setNewUser] = useState<User>({
