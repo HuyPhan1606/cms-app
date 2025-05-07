@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Content } from "../types/content.types";
 
-const ContentList = ({ onCreate }: { onCreate: () => void }) => {
+const ContentList = () => {
     const auth = useContext(AuthContext) as AuthContextType;
     const navigate = useNavigate();
     const [contents, setContents] = useState<Content[]>([]);
@@ -85,16 +85,10 @@ const ContentList = ({ onCreate }: { onCreate: () => void }) => {
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
                 <h2 className="text-2xl font-semibold text-gray-800">
                     Content Management
                 </h2>
-                <button
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-                    onClick={onCreate}
-                >
-                    Create New Content
-                </button>
             </div>
 
             {loading ? (
@@ -102,57 +96,26 @@ const ContentList = ({ onCreate }: { onCreate: () => void }) => {
             ) : contents.length === 0 ? (
                 <p className="text-gray-600">No contents available.</p>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                        <thead>
-                            <tr className="bg-gray-100 border-b">
-                                <th className="py-3 px-4 text-left text-gray-600">
-                                    Title
-                                </th>
-                                <th className="py-3 px-4 text-left text-gray-600">
-                                    Author
-                                </th>
-                                <th className="py-3 px-4 text-left text-gray-600">
-                                    Created At
-                                </th>
-                                <th className="py-3 px-4 text-left text-gray-600">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {contents.map((content) => (
-                                <tr key={content._id} className="border-b">
-                                    <td className="py-3 px-4">
-                                        {content.title}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        {content.author}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        {new Date(
-                                            content.createdAt
-                                        ).toLocaleDateString()}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        <button
-                                            className="text-indigo-600 hover:underline mr-3"
-                                            onClick={() => {}}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="text-red-600 hover:underline"
-                                            onClick={() => {}}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <ul className="space-y-4">
+                    {contents.map((content) => (
+                        <li
+                            key={content._id}
+                            className="p-4 bg-gray-50 rounded-lg shadow-sm flex justify-between items-center"
+                        >
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-800">
+                                    {content.title}
+                                </h3>
+                                <p className="text-gray-600">
+                                    Author: {content.author} | Created At:{" "}
+                                    {new Date(
+                                        content.createdAt
+                                    ).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
             )}
         </div>
     );

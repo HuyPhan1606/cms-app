@@ -11,16 +11,7 @@ export const App = () => {
         <Router>
             <Navbar />
             <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <ContentList
-                            onCreate={function (): void {
-                                throw new Error("Function not implemented.");
-                            }}
-                        />
-                    }
-                />
+                <Route path="/" element={<ContentList />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/content/:id" element={<ContentDetail />} />
