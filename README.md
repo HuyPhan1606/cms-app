@@ -46,7 +46,7 @@ Follow these steps to set up and run the project locally:
 
 3. **Build and run the project using Docker Compose**
     ```bash
-    docker-compose -f docker-compose-demo.yml up -d --build
+    docker compose -f docker-compose-demo.yml up -d --build
     ```
 
 ---
