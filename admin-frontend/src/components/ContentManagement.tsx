@@ -70,7 +70,7 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
         try {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
-                    axios.get("http://localhost:5000/contents", {
+                    axios.get("http://localhost:8080/contents", {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -110,7 +110,7 @@ const ContentManagement: React.FC<ContentManagementProps> = () => {
 
             try {
                 await handleRequestWithTokenRefresh((token: string) =>
-                    axios.delete(`http://localhost:5000/contents/${id}`, {
+                    axios.delete(`http://localhost:8080/contents/${id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

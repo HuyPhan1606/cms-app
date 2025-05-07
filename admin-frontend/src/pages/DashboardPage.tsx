@@ -72,7 +72,7 @@ const DashboardPage = () => {
         try {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
-                    axios.get("http://localhost:5000/users", {
+                    axios.get("http://localhost:8080/users", {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
@@ -123,7 +123,7 @@ const DashboardPage = () => {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
                     axios.post(
-                        "http://localhost:5000/users",
+                        "http://localhost:8080/users",
                         {
                             ...newUser,
                             createdAt: new Date(),
@@ -158,7 +158,7 @@ const DashboardPage = () => {
             const response = await handleRequestWithTokenRefresh(
                 (token: string) =>
                     axios.patch(
-                        `http://localhost:5000/users/${updatedUser._id}`,
+                        `http://localhost:8080/users/${updatedUser._id}`,
                         {
                             ...updatedUser,
                             updatedAt: new Date(),
@@ -196,7 +196,7 @@ const DashboardPage = () => {
 
             try {
                 await handleRequestWithTokenRefresh((token: string) =>
-                    axios.delete(`http://localhost:5000/users/${userId}`, {
+                    axios.delete(`http://localhost:8080/users/${userId}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

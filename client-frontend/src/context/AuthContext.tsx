@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const validateToken = async (token: string) => {
         try {
-            const response = await axios.get("http://localhost:5000/contents", {
+            const response = await axios.get("http://localhost:8080/contents", {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             });
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (email: string, password: string) => {
         const response = await axios.post(
-            "http://localhost:5000/auth/login",
+            "http://localhost:8080/auth/login",
             { email, password },
             { withCredentials: true }
         );
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = async () => {
         try {
             await axios.post(
-                "http://localhost:5000/auth/logout",
+                "http://localhost:8080/auth/logout",
                 {},
                 {
                     headers: { Authorization: `Bearer ${access_token}` },
@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/auth/refresh",
+                "http://localhost:8080/auth/refresh",
                 {},
                 { withCredentials: true }
             );

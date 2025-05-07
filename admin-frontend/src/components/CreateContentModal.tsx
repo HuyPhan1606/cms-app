@@ -44,7 +44,7 @@ const CreateContentModal = ({
         if (isEdit && content) {
             try {
                 await axios.patch(
-                    `http://localhost:5000/contents/${content._id}`,
+                    `http://localhost:8080/contents/${content._id}`,
                     {
                         title,
                         blocks: [
@@ -69,7 +69,7 @@ const CreateContentModal = ({
         } else if (!previewContent) {
             try {
                 await axios.post(
-                    "http://localhost:5000/contents",
+                    "http://localhost:8080/contents",
                     {
                         title,
                         blocks: [
@@ -203,7 +203,7 @@ const CreateContentModal = ({
                                                         fileUrl,
                                                     },
                                                 } = await axios.post(
-                                                    "http://localhost:5000/s3/upload-url",
+                                                    "http://localhost:8080/s3/upload-url",
                                                     { fileName, fileType },
                                                     {
                                                         headers: {
@@ -289,7 +289,7 @@ const CreateContentModal = ({
                                                             fileUrl,
                                                         },
                                                     } = await axios.post(
-                                                        "http://localhost:5000/s3/upload-url",
+                                                        "http://localhost:8080/s3/upload-url",
                                                         { fileName, fileType },
                                                         {
                                                             headers: {

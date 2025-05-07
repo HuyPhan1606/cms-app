@@ -23,7 +23,7 @@ const Register = () => {
             };
 
             const response = await axios.post(
-                "http://localhost:5000/users",
+                "http://localhost:8080/users",
                 payload
             );
 

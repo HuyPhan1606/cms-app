@@ -17,7 +17,7 @@ const ContentDetail = () => {
         const fetchContent = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:5000/contents/${id}`,
+                    `http://localhost:8080/contents/${id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${auth?.access_token}`,
