@@ -10,8 +10,8 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://huyphan23.workspace.opstech.or:8081',
-      'http://huyphan23.workspace.opstech.or:8082',
+      'http://huyphan23.workspace.opstech.org:8081',
+      'http://huyphan23.workspace.opstech.org:8082',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],

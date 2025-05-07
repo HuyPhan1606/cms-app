@@ -9,8 +9,8 @@ import { Server } from 'socket.io';
 @WebSocketGateway({
   cors: {
     origin: [
-      'http://huyphan23.workspace.opstech.or:8081',
-      'http://huyphan23.workspace.opstech.or:8082',
+      'http://huyphan23.workspace.opstech.org:8081',
+      'http://huyphan23.workspace.opstech.org:8082',
     ],
   },
 })

@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const validateToken = async (token: string) => {
         try {
             const response = await axios.get(
-                "http://huyphan23.workspace.opstech.or:8080/contents",
+                "http://huyphan23.workspace.opstech.org:8080/contents",
                 {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true,
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = async (email: string, password: string) => {
         const response = await axios.post(
-            "http://huyphan23.workspace.opstech.or:8080/auth/login",
+            "http://huyphan23.workspace.opstech.org:8080/auth/login",
             { email, password },
             { withCredentials: true }
         );
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = async () => {
         try {
             await axios.post(
-                "http://huyphan23.workspace.opstech.or:8080/auth/logout",
+                "http://huyphan23.workspace.opstech.org:8080/auth/logout",
                 {},
                 {
                     headers: { Authorization: `Bearer ${access_token}` },
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const response = await axios.post(
-                "http://huyphan23.workspace.opstech.or:8080/auth/refresh",
+                "http://huyphan23.workspace.opstech.org:8080/auth/refresh",
                 {},
                 { withCredentials: true }
             );

@@ -17,7 +17,7 @@ const ContentDetail = () => {
         const fetchContent = async () => {
             try {
                 const response = await axios.get(
-                    `http://huyphan23.workspace.opstech.or:8080/contents/${id}`,
+                    `http://huyphan23.workspace.opstech.org:8080/contents/${id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${auth?.access_token}`,

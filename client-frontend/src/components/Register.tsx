@@ -23,7 +23,7 @@ const Register = () => {
             };
 
             const response = await axios.post(
-                "http://huyphan23.workspace.opstech.or:8080/users",
+                "http://huyphan23.workspace.opstech.org:8080/users",
                 payload
             );
 
