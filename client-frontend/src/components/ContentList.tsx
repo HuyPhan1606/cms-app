@@ -25,7 +25,6 @@ const ContentList = () => {
             }
         };
 
-        // Only fetch contents if auth is not loading
         if (!auth?.isLoading) {
             fetchContents();
         }
@@ -41,6 +40,22 @@ const ContentList = () => {
 
         return () => {
             socket.off("contentCreated");
+        };
+    }, []);
+
+    useEffect(() => {
+        socket.on("contentUpdated", (updatedContent: any) => {
+            setContents((prevContents) => {
+                const index = prevContents.findIndex(
+                    (content) => content._id === updatedContent._id
+                );
+                const newContents = [...prevContents];
+                newContents[index] = updatedContent;
+                return newContents;
+            });
+        });
+        return () => {
+            socket.off("contentUpdated");
         };
     }, []);
 

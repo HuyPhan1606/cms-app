@@ -18,7 +18,7 @@ export const setupAxiosInterceptors = (authContext: AuthContextType | null) => {
         if (!token) {
             try {
                 console.log("No access token found, attempting to refresh");
-                token = await authContext.refreshaccess_token();
+                token = await authContext.refreshAccessToken();
             } catch (error) {
                 console.error("Failed to refresh token on request:", error);
                 return Promise.reject(error);
@@ -53,7 +53,7 @@ export const setupAxiosInterceptors = (authContext: AuthContextType | null) => {
                     if (!authContext) {
                         throw new Error("Authentication context missing");
                     }
-                    const newToken = await authContext.refreshaccess_token();
+                    const newToken = await authContext.refreshAccessToken();
                     console.log("New token obtained:", newToken);
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     console.log("Retrying request:", originalRequest.url);

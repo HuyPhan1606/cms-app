@@ -1,24 +1,22 @@
-// AuthContext.tsx
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "../types/jwt.payload";
-import Cookies from "js-cookie";
 
 export interface AuthContextType {
     access_token: string | null;
     user: { id: string; email: string; role: string } | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    refreshaccess_token: () => Promise<string>;
+    refreshAccessToken: () => Promise<string>;
     isLoading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [access_token, setaccess_token] = useState<string | null>(
+    const [access_token, setAccessToken] = useState<string | null>(
         localStorage.getItem("access_token")
     );
     const [user, setUser] = useState<{
@@ -48,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (storedToken) {
                 try {
                     const decoded: JwtPayload = jwtDecode(storedToken);
-                    setaccess_token(storedToken);
+                    setAccessToken(storedToken);
                     setUser({
                         id: decoded.sub,
                         email: decoded.email,
@@ -57,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
                     const isValid = await validateToken(storedToken);
                     if (!isValid) {
-                        storedToken = await refreshaccess_token();
+                        storedToken = await refreshAccessToken();
                     }
                 } catch (error) {
                     console.error("Error validating token:", error);
@@ -68,11 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // If no valid token, attempt to refresh
             if (!storedToken) {
                 try {
-                    const newToken = await refreshaccess_token();
-                    setaccess_token(newToken);
+                    const newToken = await refreshAccessToken();
+                    setAccessToken(newToken);
                 } catch (error) {
                     console.error("Failed to refresh token on init:", error);
-                    setaccess_token(null);
+                    setAccessToken(null);
                     setUser(null);
                     localStorage.removeItem("access_token");
                 }
@@ -91,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             { withCredentials: true }
         );
         const { access_token } = response.data;
-        setaccess_token(access_token);
+        setAccessToken(access_token);
         setRefreshAttempts(0);
         localStorage.setItem("access_token", access_token);
 
@@ -114,17 +112,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     withCredentials: true,
                 }
             );
-            setaccess_token(null);
+            setAccessToken(null);
             setUser(null);
             setRefreshAttempts(0);
             localStorage.removeItem("access_token");
-            Cookies.remove("refreshToken");
         } catch (error) {
             console.error("Logout failed:", error);
         }
     };
 
-    const refreshaccess_token = async (): Promise<string> => {
+    const refreshAccessToken = async (): Promise<string> => {
         if (refreshAttempts >= 3) {
             await logout();
             throw new Error(
@@ -138,17 +135,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 {},
                 { withCredentials: true }
             );
-            const { access_token: newaccess_token } = response.data;
-            setaccess_token(newaccess_token);
+            const { access_token: new_access_token } = response.data;
+            setAccessToken(new_access_token);
             setRefreshAttempts(0);
-            localStorage.setItem("access_token", newaccess_token);
-            const decoded: JwtPayload = jwtDecode(newaccess_token);
+            localStorage.setItem("access_token", new_access_token);
+            const decoded: JwtPayload = jwtDecode(new_access_token);
             setUser({
                 id: decoded.sub,
                 email: decoded.email,
                 role: decoded.role,
             });
-            return newaccess_token;
+            return new_access_token;
         } catch (error) {
             setRefreshAttempts((prev) => prev + 1);
             await logout();
@@ -168,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 user,
                 login,
                 logout,
-                refreshaccess_token,
+                refreshAccessToken,
                 isLoading,
             }}
         >
